@@ -39,7 +39,7 @@ fn main() {
     // Classify statistically (z-score)
     let mut reading2 = SensorReading::new("cpu_load", 95.0, 1001);
     reading2.classify_statistical(50.0, 15.0);
-    println!("Classification: {:?}", reading2.classification); // High (z > 1)
+    println!("Classification: {:?}", reading2.classification); // High (z = 3.0)
 
     // Fuse multiple sensors
     let fusion = SensorFusion::new();
@@ -127,11 +127,12 @@ Part of the **SuperInstance** ternary computing ecosystem:
 
 ## Known Limitations
 
-- **Statistical classification uses ±1σ thresholds, not ±3σ.** Despite the common convention of ±3σ for outliers, `classify_statistical` uses ±1σ, meaning ~32% of normally distributed values will be classified as Low or High.
-- **`Calibration::feedback()` adjusts offset by a fixed 0.1 per call** with no damping or convergence guarantee. Calling feedback 100 times with `Low` adds 10.0 to the offset.
-- **`AnomalyDetector::update_baseline()` replaces the baseline entirely** — no exponential moving average or gradual adaptation.
+- **Statistical classification uses ±1σ thresholds, not ±3σ**: Despite the common convention of ±3σ for outliers, `classify_statistical` uses ±1σ, meaning ~32% of normally distributed values will be classified as Low or High.
+- **Calibration is offset-only**: The `feedback()` and `auto_calibrate()` methods only adjust the offset, never the scale factor. If the sensor has a gain error (systematic scaling), calibration cannot correct it.
+- **Fixed calibration step sizes**: Offset adjustments use hard-coded step sizes (0.1 for feedback, 0.05 for auto-calibrate) with no damping or convergence guarantee. Calling feedback 100 times with `Low` adds 10.0 to the offset.
+- **No outlier-resistant fusion**: Weighted average fusion is sensitive to outliers — a single wildly incorrect sensor reading can dominate the result. `weighted_vote()` allows a single heavily-weighted sensor to dominate. There is no median-based or trimmed fusion option.
 - **`majority_vote()` breaks ties in favor of Low** (checked first), introducing a subtle bias.
-- **`weighted_vote()` allows a single heavily-weighted sensor to dominate** — a sensor with weight 10 voting Low (-1) produces -10, overwhelming all others.
+- **AnomalyDetector baseline is static between updates**: The baseline (mean, std_dev) only changes when `update_baseline()` is explicitly called — no exponential moving average or gradual adaptation.
 
 ## License
 
