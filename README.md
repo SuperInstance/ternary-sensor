@@ -39,7 +39,7 @@ fn main() {
     // Classify statistically (z-score)
     let mut reading2 = SensorReading::new("cpu_load", 95.0, 1001);
     reading2.classify_statistical(50.0, 15.0);
-    println!("Classification: {:?}", reading2.classification); // High (z > 3)
+    println!("Classification: {:?}", reading2.classification); // High (z > 1)
 
     // Fuse multiple sensors
     let fusion = SensorFusion::new();
@@ -124,6 +124,14 @@ Part of the **SuperInstance** ternary computing ecosystem:
 - [`ternary-control`](https://crates.io/crates/ternary-control) — ternary PID and bang-bang controllers
 - [`ternary-fuzzy`](https://crates.io/crates/ternary-fuzzy) — fuzzy logic with ternary membership
 - [`ternary-anomaly`](https://crates.io/crates/ternary-anomaly) — ternary anomaly detection
+
+## Known Limitations
+
+- **Statistical classification uses ±1σ thresholds, not ±3σ.** Despite the common convention of ±3σ for outliers, `classify_statistical` uses ±1σ, meaning ~32% of normally distributed values will be classified as Low or High.
+- **`Calibration::feedback()` adjusts offset by a fixed 0.1 per call** with no damping or convergence guarantee. Calling feedback 100 times with `Low` adds 10.0 to the offset.
+- **`AnomalyDetector::update_baseline()` replaces the baseline entirely** — no exponential moving average or gradual adaptation.
+- **`majority_vote()` breaks ties in favor of Low** (checked first), introducing a subtle bias.
+- **`weighted_vote()` allows a single heavily-weighted sensor to dominate** — a sensor with weight 10 voting Low (-1) produces -10, overwhelming all others.
 
 ## License
 
