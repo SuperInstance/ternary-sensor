@@ -137,3 +137,11 @@ Part of the **SuperInstance** ternary computing ecosystem:
 ## License
 
 MIT
+
+## See Also
+- **ternary-predict** — related
+- **ternary-kalman** — related
+- **ternary-robotics** — related
+- **ternary-control** — related
+- **ternary-attention** — related
+
